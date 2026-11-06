@@ -3118,7 +3118,8 @@ function hidePlaque(){ pqFor = null; pq.classList.add('off'); }
    ========================================================= */
 const CARS = [
   {id:'atrevido', name:'Atrevido', kind:'Super-SUV off-road', paint:{mode:0, ref:.21, name:'Desert Gold satinato'}, sheet:[['Vernice','Desert Gold satinato'],['Firma luce','LED a Y'],['Assetto','Rialzato, barre sul tetto']]},
-  {id:'smart', name:'Smart Hypercar', kind:'Hypercar a motore centrale', paint:{mode:1, ref:.16, name:'Grafite satinato'}, sheet:[['Vernice','Grafite satinato'],['Aerodinamica','Grande presa laterale'],['Retro','Barra LED a X, quattro uscite']]}
+  {id:'smart', name:'Smart Hypercar', kind:'Hypercar a motore centrale', paint:{mode:1, ref:.16, name:'Grafite satinato'}, sheet:[['Vernice','Grafite satinato'],['Aerodinamica','Grande presa laterale'],['Retro','Barra LED a X, quattro uscite']]},
+  {id:'intermeccanica', name:'Intermeccanica', kind:'Gran turismo concept', paint:{mode:2, ref:.12, name:'Rosso Intermeccanica'}, sheet:[['Vernice','Rosso Intermeccanica'],['Firma luce','Lama LED a tutta larghezza'],['Linea','Cofano lungo, fiancata scavata']]}
 ];
 /* vernici del configuratore e ricolore della sola carrozzeria */
 const PAINTS = [
@@ -3398,7 +3399,7 @@ let carEnv = null, carsLoaded = false;
       PAINTS.forEach((c,i)=>{ const x = x0 + (i%cols)*(sw+gx), y = y0 + Math.floor(i/cols)*(sh+gy);
         rects.push([x,y,sw,sh]);
         g.fillStyle = '#17181c'; g.fillRect(x,y,sw,sh);
-        if (i===0){ const gr = g.createLinearGradient(x+14,0,x+96,0); gr.addColorStop(0, p.car.id==='smart' ? '#55565a' : '#c2a477'); gr.addColorStop(1, p.car.id==='smart' ? '#2c2d30' : '#8a6d45'); g.fillStyle = gr; }
+        if (i===0){ const gr = g.createLinearGradient(x+14,0,x+96,0); const sw0 = {smart:['#55565a','#2c2d30'], intermeccanica:['#d4241c','#6e0d0a']}[p.car.id] || ['#c2a477','#8a6d45']; gr.addColorStop(0, sw0[0]); gr.addColorStop(1, sw0[1]); g.fillStyle = gr; }
         else g.fillStyle = c.h;
         g.fillRect(x+16, y+18, 92, 92);
         g.fillStyle = 'rgba(255,255,255,.18)'; g.fillRect(x+16, y+18, 92, 10);
@@ -3490,8 +3491,10 @@ function applyPaint(p, root){
         '{ vec3 lin = sampledDiffuseColor.rgb; vec3 sr = pow(max(lin, vec3(0.0)), vec3(1.0/2.2));',
         '  float mx = max(sr.r, max(sr.g, sr.b)), mn = min(sr.r, min(sr.g, sr.b)), dd = mx - mn + 1e-5, sat = (mx - mn)/(mx + 1e-5);',
         '  float hue = (sr.r >= mx ? mod((sr.g - sr.b)/dd, 6.0) : (sr.g >= mx ? (sr.b - sr.r)/dd + 2.0 : (sr.r - sr.g)/dd + 4.0)) * 60.0;',
+        '  float hr = min(hue, 360.0 - hue);',
         '  float m = uMode < 0.5 ? smoothstep(0.12, 0.22, sat) * smoothstep(10.0, 20.0, hue) * (1.0 - smoothstep(55.0, 65.0, hue)) * smoothstep(0.22, 0.32, mx)',
-        '                        : (1.0 - smoothstep(0.10, 0.18, sat)) * smoothstep(0.26, 0.34, mx) * (1.0 - smoothstep(0.68, 0.78, mx)) * (1.0 - smoothstep(0.0, 0.03, sr.b - sr.r));',
+        '          : uMode < 1.5 ? (1.0 - smoothstep(0.10, 0.18, sat)) * smoothstep(0.26, 0.34, mx) * (1.0 - smoothstep(0.68, 0.78, mx)) * (1.0 - smoothstep(0.0, 0.03, sr.b - sr.r))',
+        '                        : smoothstep(0.30, 0.45, sat) * (1.0 - smoothstep(18.0, 30.0, hr)) * smoothstep(0.10, 0.18, mx);',
         '  float lum = dot(lin, vec3(0.2126, 0.7152, 0.0722));',
         '  vec3 rc = uTint * clamp(lum / uRef, 0.0, 1.7);',
         '  diffuseColor.rgb = mix(diffuseColor.rgb, rc, m * uMix); }',
